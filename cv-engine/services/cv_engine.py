@@ -1,12 +1,21 @@
 import os
 import time
 import logging
+import subprocess
 from pathlib import Path
 from typing import Optional
 import cv2
 import numpy as np
 
 logger = logging.getLogger(__name__)
+
+
+def check_ffmpeg_available() -> bool:
+    try:
+        r = subprocess.run(["ffmpeg", "-version"], capture_output=True, timeout=5)
+        return r.returncode == 0
+    except (FileNotFoundError, subprocess.TimeoutExpired):
+        return False
 
 _model = None
 _model_loaded_at: float = 0.0

@@ -31,7 +31,7 @@ export const cctvApi = {
     request<CCTVStream>('/api/cctvs', { method: 'POST', body: JSON.stringify(data) }),
   update: (id: string, data: CCTVStreamUpdate) =>
     request<CCTVStream>(`/api/cctvs/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-  remove: (id: string) => fetch(`/api/cctvs/${id}`, { method: 'DELETE' }),
+  remove: (id: string) => request<void>(`/api/cctvs/${id}`, { method: 'DELETE' }),
   toggle: (id: string) => request<CCTVStream>(`/api/cctvs/${id}/toggle`, { method: 'PATCH' }),
 }
 
@@ -40,8 +40,8 @@ export const cctvApi = {
 export const eventsApi = {
   list: (params?: { page?: number; limit?: number; cctv_id?: string; level?: string }) => {
     const qs = new URLSearchParams()
-    if (params?.page) qs.set('page', String(params.page))
-    if (params?.limit) qs.set('limit', String(params.limit))
+    if (params?.page !== undefined) qs.set('page', String(params.page))
+    if (params?.limit !== undefined) qs.set('limit', String(params.limit))
     if (params?.cctv_id) qs.set('cctv_id', params.cctv_id)
     if (params?.level) qs.set('level', params.level)
     return request<EventsPage>(`/api/events?${qs}`)

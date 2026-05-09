@@ -29,6 +29,8 @@ class StreamManager:
         self._started_at: float = time.time()
         self._broadcast_callback = None
         self._settings_lock = asyncio.Lock()
+        self._db_engine = None
+        self._db_session_factory = None
 
     @property
     def uptime_seconds(self) -> int:
@@ -216,41 +218,46 @@ class StreamManager:
 
             await asyncio.sleep(settings.cv_frame_interval)
 
+    async def _get_db_session_factory(self):
+        if self._db_engine is None:
+            from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
+            from sqlalchemy import text
+            from config import settings
+
+            self._db_engine = create_async_engine(settings.database_url, echo=False)
+            async with self._db_engine.begin() as conn:
+                await conn.execute(text("PRAGMA journal_mode=WAL"))
+            self._db_session_factory = async_sessionmaker(
+                self._db_engine, class_=AsyncSession, expire_on_commit=False
+            )
+        return self._db_session_factory
+
     async def _write_event(self, result: dict):
-        from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession, async_sessionmaker
         from sqlalchemy import text
-        from config import settings
         import uuid
 
-        engine = create_async_engine(settings.database_url, echo=False)
-        async with engine.begin() as conn:
-            await conn.execute(text("PRAGMA journal_mode=WAL"))
-        SessionLocal = async_sessionmaker(engine, class_=AsyncSession, expire_on_commit=False)
-
-        try:
-            async with SessionLocal() as db:
-                await db.execute(
-                    text(
-                        "INSERT INTO events (id, cctv_id, cctv_name, location, alert_level, alert_color, "
-                        "person_count, confidence_avg, timestamp) VALUES "
-                        "(:id, :cctv_id, :cctv_name, :location, :alert_level, :alert_color, "
-                        ":person_count, :confidence_avg, :timestamp)"
-                    ),
-                    {
-                        "id": str(uuid.uuid4()),
-                        "cctv_id": result["cctv_id"],
-                        "cctv_name": result["cctv_name"],
-                        "location": result["location"],
-                        "alert_level": result["alert_level"],
-                        "alert_color": result["alert_color"],
-                        "person_count": result["person_count"],
-                        "confidence_avg": result["confidence_avg"],
-                        "timestamp": result["timestamp"],
-                    },
-                )
-                await db.commit()
-        finally:
-            await engine.dispose()
+        SessionLocal = await self._get_db_session_factory()
+        async with SessionLocal() as db:
+            await db.execute(
+                text(
+                    "INSERT INTO events (id, cctv_id, cctv_name, location, alert_level, alert_color, "
+                    "person_count, confidence_avg, timestamp) VALUES "
+                    "(:id, :cctv_id, :cctv_name, :location, :alert_level, :alert_color, "
+                    ":person_count, :confidence_avg, :timestamp)"
+                ),
+                {
+                    "id": str(uuid.uuid4()),
+                    "cctv_id": result["cctv_id"],
+                    "cctv_name": result["cctv_name"],
+                    "location": result["location"],
+                    "alert_level": result["alert_level"],
+                    "alert_color": result["alert_color"],
+                    "person_count": result["person_count"],
+                    "confidence_avg": result["confidence_avg"],
+                    "timestamp": result["timestamp"],
+                },
+            )
+            await db.commit()
 
     async def restart_with_settings(self):
         async with self._settings_lock:
@@ -324,6 +331,8 @@ class StreamManager:
             self._rotation_task.cancel()
         for sid in list(self._active_ids):
             await self._stop_stream_task(sid)
+        if self._db_engine:
+            await self._db_engine.dispose()
 
 
 stream_manager = StreamManager()

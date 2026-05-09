@@ -1,6 +1,8 @@
+from pathlib import Path as _Path
 from pydantic_settings import BaseSettings
 from typing import List, Dict, Any
 
+_BASE_DIR = _Path(__file__).parent.parent
 
 DEFAULT_CCTV_STREAMS: List[Dict[str, Any]] = [
     {
@@ -35,7 +37,7 @@ DEFAULT_CCTV_STREAMS: List[Dict[str, Any]] = [
 
 
 class Settings(BaseSettings):
-    database_url: str = "sqlite+aiosqlite:///../shared/semar_watch.db"
+    database_url: str = f"sqlite+aiosqlite:///{(_BASE_DIR / 'shared' / 'semar_watch.db').as_posix()}"
     backend_port: int = 8000
     cv_engine_url: str = "http://localhost:8001"
     cors_origins: List[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]

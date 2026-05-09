@@ -18,6 +18,14 @@ _started_at = time.time()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    from services.cv_engine import check_ffmpeg_available
+    if not check_ffmpeg_available():
+        logger.warning(
+            "FFmpeg tidak ditemukan di PATH. "
+            "HLS stream capture akan gagal. "
+            "Install FFmpeg: https://ffmpeg.org/download.html"
+        )
+
     stream_manager.set_broadcast_callback(broadcast_cv_result)
 
     streams_data = await stream_manager.load_streams_from_api()

@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from fastapi.responses import Response
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 from services.stream_manager import stream_manager
@@ -9,10 +9,10 @@ router = APIRouter(prefix="/cv", tags=["control"])
 
 
 class CVSettings(BaseModel):
-    cv_frame_interval: Optional[int] = None
-    max_concurrent_streams: Optional[int] = None
+    cv_frame_interval: Optional[float] = Field(None, gt=0, le=60)
+    max_concurrent_streams: Optional[int] = Field(None, ge=1, le=10)
     yolo_model_name: Optional[str] = None
-    rotation_interval: Optional[int] = None
+    rotation_interval: Optional[int] = Field(None, ge=10, le=3600)
 
 
 @router.get("/streams")

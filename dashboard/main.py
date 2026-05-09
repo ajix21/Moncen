@@ -51,7 +51,6 @@ class DashboardWSManager:
         self.connections.append(ws)
 
     def disconnect(self, ws: WebSocket):
-        self.connections.discard(ws) if hasattr(self.connections, "discard") else None
         if ws in self.connections:
             self.connections.remove(ws)
 
