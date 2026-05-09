@@ -1,0 +1,66 @@
+version: "3.9"
+
+services:
+  dashboard:
+    build:
+      context: ./dashboard
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - shared_data:/app/shared
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///shared/semar_watch.db
+      - CV_ENGINE_URL=http://cv-engine:8001
+    networks:
+      - semar_net
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  cv-engine:
+    build:
+      context: ./cv-engine
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    volumes:
+      - shared_data:/app/shared
+      - model_data:/app/models
+    environment:
+      - DATABASE_URL=sqlite+aiosqlite:///shared/semar_watch.db
+      - DASHBOARD_URL=http://dashboard:8000
+    networks:
+      - semar_net
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 3G
+        reservations:
+          memory: 512M
+    profiles:
+      - cv
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5173:80"
+    depends_on:
+      - dashboard
+    networks:
+      - semar_net
+    restart: unless-stopped
+
+volumes:
+  shared_data:
+  model_data:
+
+networks:
+  semar_net:
+    driver: bridge
