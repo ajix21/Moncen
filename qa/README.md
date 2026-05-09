@@ -9,8 +9,8 @@ security audit, dan resource monitoring.
 ## Prasyarat
 
 - Python 3.11+
-- semar-watch v2 sudah di-generate di direktori induk
-- (Opsional) `./start-all.sh` dijalankan untuk test runtime
+- semar-watch v2 sudah di-clone dan ada di direktori induk
+- (Opsional) `bash start-all.sh` dijalankan untuk test runtime
 
 ---
 
@@ -18,8 +18,7 @@ security audit, dan resource monitoring.
 
 ```bash
 cd semar-watch
-chmod +x qa/setup_qa.sh qa/run_qa.sh
-./qa/setup_qa.sh
+bash qa/setup_qa.sh
 ```
 
 ---
@@ -28,24 +27,25 @@ chmod +x qa/setup_qa.sh qa/run_qa.sh
 
 ### Structure-only (tidak butuh server):
 ```bash
-./qa/run_qa.sh --structure-only
+bash qa/run_qa.sh --structure-only
 ```
 
 ### Security-only:
 ```bash
-./qa/run_qa.sh --security-only
+bash qa/run_qa.sh --security-only
 ```
 
 ### Full suite (semua service harus aktif):
 ```bash
-./start-all.sh        # terminal 1
-./qa/run_qa.sh        # terminal 2
+bash start-all.sh          # terminal 1
+bash qa/run_qa.sh          # terminal 2
 ```
 
 ### Satu file spesifik:
 ```bash
 cd qa
-source venv/bin/activate
+source venv/Scripts/activate   # Windows Git Bash
+# atau: source venv/bin/activate  (Linux/Mac)
 python -m pytest test_02_dashboard_api.py -v --timeout=30
 ```
 
@@ -86,7 +86,7 @@ Tests skip automatically (not fail) when:
 
 ---
 
-## Expected Results (setelah `./start-all.sh`)
+## Expected Results (setelah `bash start-all.sh`)
 
 ```
 test_01_structure.py  ..............................  PASS (structural)
@@ -125,6 +125,6 @@ timeout 60s diperlukan karena `cv_frame_interval` bisa 5–10s.
 - name: Structure QA (no server)
   run: |
     cd semar-watch
-    ./qa/setup_qa.sh
-    ./qa/run_qa.sh --structure-only
+    bash qa/setup_qa.sh
+    bash qa/run_qa.sh --structure-only
 ```

@@ -46,14 +46,13 @@ cd moncen
 ### 2. Setup (sekali saja)
 
 ```bash
-chmod +x setup.sh start-*.sh stop-*.sh
-./setup.sh
+bash setup.sh
 ```
 
-### 2. Jalankan Dashboard Saja (hemat daya)
+### 3. Jalankan Dashboard Saja (hemat daya)
 
 ```bash
-./start-dashboard.sh
+bash start-dashboard.sh
 ```
 
 Buka: http://localhost:5173
@@ -61,10 +60,10 @@ Buka: http://localhost:5173
 Dashboard berjalan — video stream tetap tampil, tapi analisis CV tidak aktif.
 Semua CCTV card menampilkan `--` untuk jumlah orang.
 
-### 3. Aktifkan CV Engine (analisis massa)
+### 4. Aktifkan CV Engine (analisis massa)
 
 ```bash
-./start-cv.sh
+bash start-cv.sh
 ```
 
 CV Engine akan:
@@ -72,26 +71,26 @@ CV Engine akan:
 - Fetch daftar CCTV dari dashboard API
 - Mulai proses max 2 stream secara bersamaan (rotasi setiap 60s)
 
-### 4. Stop CV Engine
+### 5. Stop CV Engine
 
 ```bash
-./stop-cv.sh
+bash stop-cv.sh
 ```
 
-### 5. Stop Semua
+### 6. Stop Semua
 
 ```bash
-./stop-all.sh
+bash stop-all.sh
 ```
 
 ---
 
 ## Port & Service
 
-| Service         | Port  | Command                   |
-|-----------------|-------|---------------------------|
-| Dashboard API   | 8000  | ./start-dashboard.sh      |
-| CV Engine API   | 8001  | ./start-cv.sh             |
+| Service         | Port  | Command                        |
+|-----------------|-------|--------------------------------|
+| Dashboard API   | 8000  | `bash start-dashboard.sh`      |
+| CV Engine API   | 8001  | `bash start-cv.sh`             |
 | Frontend (Vite) | 5173  | (dijalankan oleh dashboard script) |
 
 ---

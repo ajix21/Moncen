@@ -236,8 +236,8 @@ def test_start_scripts_are_executable_or_exist():
         path = ROOT / script
         assert path.exists(), f"Script tidak ditemukan: {script}"
         content = path.read_text(encoding="utf-8", errors="ignore")
-        assert "#!/bin/bash" in content or "#!/usr/bin/env bash" in content, (
-            f"{script} tidak memiliki shebang line"
+        assert "#!/usr/bin/env bash" in content, (
+            f"{script} harus menggunakan '#!/usr/bin/env bash' (kompatibel Windows Git Bash)"
         )
 
 

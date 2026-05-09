@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 # Setup QA environment — uses its own venv, does not touch dashboard/ or cv-engine/ venvs
 set -e
 cd "$(dirname "$0")"

@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 cd "$(dirname "$0")"
 echo "Menjalankan semua service..."
 bash start-dashboard.sh &
