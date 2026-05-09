@@ -1,0 +1,29 @@
+__pycache__/
+*.py[cod]
+*.pyc
+.env
+*.db
+*.db-shm
+*.db-wal
+
+# Python venvs (per service)
+dashboard/venv/
+cv-engine/venv/
+qa/venv/
+
+# Frontend build artifacts
+frontend/node_modules/
+frontend/dist/
+
+# YOLO model weights (auto-downloaded)
+models/*.pt
+
+# Log files
+*.log
+
+# macOS
+.DS_Store
+
+# Editor
+.vscode/
+.idea/
