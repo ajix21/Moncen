@@ -3,7 +3,6 @@ import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { Header } from '@/components/Layout/Header'
 import { Sidebar } from '@/components/Layout/Sidebar'
 import { useCCTVStore } from '@/store/cctvStore'
-import { useWebSocket } from '@/hooks/useWebSocket'
 import { useCVEngine } from '@/hooks/useCVEngine'
 
 // Pages
@@ -24,9 +23,11 @@ function AppInner() {
   return (
     <div className="flex flex-col h-screen bg-navy-950 text-white overflow-hidden">
       <Header />
-      <div className="flex flex-1 overflow-hidden">
+      {/* min-h-0 prevents flex children from overflowing the column container */}
+      <div className="flex flex-1 overflow-hidden min-h-0">
         <Sidebar />
-        <main className="flex-1 overflow-y-auto">
+        {/* min-w-0 prevents content wider than remaining space from pushing sidebar */}
+        <main className="flex-1 overflow-y-auto min-w-0">
           <Routes>
             <Route path="/" element={<DashboardPage />} />
             <Route path="/analytics" element={<AnalyticsPage />} />
