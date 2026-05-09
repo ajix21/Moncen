@@ -98,10 +98,46 @@ Defined in `cv-engine/config.py`:
 | SIAGA    | 200–999     | `#f97316` |
 | DARURAT  | ≥1000       | `#ef4444` |
 
+## Fine-tuning model (crowd detection)
+
+Dataset: **CrowdHuman** — dataset terbaik untuk orang berdesakan (vbox annotations).
+
+```bash
+# 1. Download dataset dari https://www.crowdhuman.org/download.html
+#    Extract ke train/raw/ dengan struktur:
+#    train/raw/annotation_train.odgt
+#    train/raw/annotation_val.odgt
+#    train/raw/images/*.jpg
+
+# 2. Konversi ke YOLO format
+python train/prepare_crowdhuman.py
+# Opsional: --max-train 3000 --max-val 500 untuk dataset lebih kecil
+
+# 3. Training (GPU sangat direkomendasikan, CPU i3 Gen 7 akan sangat lambat)
+python train/train.py --device cpu           # CPU (lambat, untuk percobaan)
+python train/train.py --device 0             # GPU NVIDIA pertama
+python train/train.py --device 0 --imgsz 640 --epochs 50 --batch 16  # full
+
+# 4. Validasi model
+python train/validate.py --model models/training/semar_crowd_v1/weights/best.pt
+
+# 5. Aktifkan model fine-tuned di CV engine
+# Edit cv-engine/.env:
+# YOLO_MODEL_NAME=../models/training/semar_crowd_v1/weights/best.pt
+# YOLO_IMGSZ=640
+# YOLO_CONF=0.25
+# YOLO_IOU=0.35
+```
+
+Inference params setelah fine-tune (optimal untuk crowd): `imgsz=640`, `conf=0.25`, `iou=0.35`, `max_det=500`.
+Untuk base `yolov8n.pt` tanpa fine-tune: `imgsz=416`, `conf=0.40`, `iou=0.45`, `max_det=300`.
+
+Semua parameter bisa diubah live via `PUT /cv/settings` tanpa restart. Mengganti `yolo_model_name` otomatis reset model cache sehingga model baru di-load pada inference berikutnya.
+
 ## Key constraints
 
-- **YOLO model**: only `yolov8n.pt` (nano). Never use medium/large — i3 Gen 7 CPU cannot handle them
+- **YOLO model size**: hanya nano (`yolov8n.pt`) atau model fine-tune berbasis nano — jangan gunakan `yolov8s/m/l/x` untuk CPU i3 Gen 7
 - `cv_frame_interval` valid range: `(0, 60]` seconds; `max_concurrent_streams` valid range: `[1, 10]`
-- `models_dir` and `database_url` in both `config.py` files use absolute paths derived from `Path(__file__).parent.parent` — do not change to relative paths
-- CV engine settings mutations are not protected by a lock — avoid concurrent `PUT /cv/settings` calls
-- Docker: CV engine is in the `cv` profile (`docker compose --profile cv up`)
+- `models_dir` dan `database_url` di kedua `config.py` menggunakan absolute path via `Path(__file__).parent.parent` — jangan ubah ke relative path
+- CV engine settings mutations tidak dilindungi lock — hindari concurrent `PUT /cv/settings`
+- Docker: CV engine ada di profile `cv` (`docker compose --profile cv up`)

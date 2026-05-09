@@ -21,6 +21,18 @@ _model = None
 _model_loaded_at: float = 0.0
 
 
+def _resolve_model_path(settings) -> Path:
+    """
+    Resolve path model: jika yolo_model_name adalah path absolut atau mengandung
+    separator, gunakan langsung. Jika hanya nama file, cari di models_dir.
+    """
+    name = settings.yolo_model_name
+    p = Path(name)
+    if p.is_absolute() or "/" in name or "\\" in name:
+        return p
+    return Path(settings.models_dir) / name
+
+
 def get_model():
     global _model, _model_loaded_at
     if _model is not None:
@@ -29,17 +41,15 @@ def get_model():
     from config import settings
     from ultralytics import YOLO
 
-    model_path = Path(settings.models_dir) / settings.yolo_model_name
+    model_path = _resolve_model_path(settings)
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
     logger.info(f"Loading YOLO model from {model_path} ...")
     _model = YOLO(str(model_path))
     _model.overrides["device"] = "cpu"
     _model.overrides["half"] = False
-    _model.overrides["imgsz"] = settings.yolo_imgsz
-    _model.overrides["conf"] = settings.yolo_conf
     _model_loaded_at = time.time()
-    logger.info("YOLO model loaded successfully")
+    logger.info(f"Model loaded: {model_path.name}")
     return _model
 
 
@@ -68,9 +78,23 @@ def run_inference(frame: np.ndarray) -> dict:
 
     t0 = time.perf_counter()
 
-    small = cv2.resize(frame, (416, 234))
+    imgsz = settings.yolo_imgsz
+    # Pertahankan aspect ratio: hitung tinggi proporsional dari lebar target
+    orig_h, orig_w = frame.shape[:2]
+    target_h = int(imgsz * orig_h / orig_w)
+    small = cv2.resize(frame, (imgsz, target_h))
+
     model = get_model()
-    results = model(small, classes=[0], verbose=False)
+    results = model(
+        small,
+        classes=[0],        # hanya kelas person
+        conf=settings.yolo_conf,
+        iou=settings.yolo_iou,
+        max_det=settings.yolo_max_det,
+        imgsz=imgsz,
+        verbose=False,
+        half=False,
+    )
 
     boxes = []
     confidences = []
@@ -79,8 +103,8 @@ def run_inference(frame: np.ndarray) -> dict:
         result = results[0]
         if result.boxes is not None:
             orig_h, orig_w = frame.shape[:2]
-            scale_x = orig_w / 416
-            scale_y = orig_h / 234
+            scale_x = orig_w / imgsz
+            scale_y = orig_h / target_h
             for box in result.boxes:
                 x1, y1, x2, y2 = box.xyxy[0].tolist()
                 conf = float(box.conf[0])

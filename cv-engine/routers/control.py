@@ -13,6 +13,10 @@ class CVSettings(BaseModel):
     max_concurrent_streams: Optional[int] = Field(None, ge=1, le=10)
     yolo_model_name: Optional[str] = None
     rotation_interval: Optional[int] = Field(None, ge=10, le=3600)
+    yolo_imgsz: Optional[int] = Field(None, ge=160, le=1280)
+    yolo_conf: Optional[float] = Field(None, gt=0.0, lt=1.0)
+    yolo_iou: Optional[float] = Field(None, gt=0.0, lt=1.0)
+    yolo_max_det: Optional[int] = Field(None, ge=1, le=1000)
 
 
 @router.get("/streams")
@@ -47,6 +51,8 @@ async def get_settings():
         "rotation_interval": settings.rotation_interval,
         "yolo_imgsz": settings.yolo_imgsz,
         "yolo_conf": settings.yolo_conf,
+        "yolo_iou": settings.yolo_iou,
+        "yolo_max_det": settings.yolo_max_det,
     }
 
 
@@ -60,8 +66,19 @@ async def update_settings(payload: CVSettings):
         settings.max_concurrent_streams = payload.max_concurrent_streams
     if payload.yolo_model_name is not None:
         settings.yolo_model_name = payload.yolo_model_name
+        # Reset model cache agar model baru di-load ulang
+        import services.cv_engine as cv_engine_mod
+        cv_engine_mod._model = None
     if payload.rotation_interval is not None:
         settings.rotation_interval = payload.rotation_interval
+    if payload.yolo_imgsz is not None:
+        settings.yolo_imgsz = payload.yolo_imgsz
+    if payload.yolo_conf is not None:
+        settings.yolo_conf = payload.yolo_conf
+    if payload.yolo_iou is not None:
+        settings.yolo_iou = payload.yolo_iou
+    if payload.yolo_max_det is not None:
+        settings.yolo_max_det = payload.yolo_max_det
 
     await stream_manager.restart_with_settings()
     return {"status": "applied", "settings": await get_settings()}

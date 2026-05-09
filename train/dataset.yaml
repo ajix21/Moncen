@@ -1,0 +1,10 @@
+# Dataset config untuk YOLOv8 fine-tuning
+# Path relatif dari repo root saat memanggil model.train()
+
+path: train/data
+train: images/train
+val: images/val
+
+nc: 1
+names:
+  0: person
