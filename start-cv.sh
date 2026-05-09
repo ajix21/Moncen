@@ -8,8 +8,8 @@ if curl -s http://localhost:8001/health > /dev/null 2>&1; then
 fi
 
 cd cv-engine
-source venv/bin/activate
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8001 > /tmp/semar-cv.log 2>&1 &
+source venv/Scripts/activate 2>/dev/null || source venv/bin/activate
+python -m uvicorn main:app --host 0.0.0.0 --port 8001 > /tmp/semar-cv.log 2>&1 &
 CV_PID=$!
 echo $CV_PID > /tmp/semar-cv.pid
 deactivate

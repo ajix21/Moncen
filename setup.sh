@@ -7,10 +7,10 @@ mkdir -p shared models
 # Dashboard backend
 echo "-> Setup dashboard backend..."
 cd dashboard
-python3 -m venv venv
-source venv/bin/activate
+python -m venv venv
+source venv/Scripts/activate 2>/dev/null || source venv/bin/activate
 pip install --quiet -r requirements.txt
-python3 -c "
+python -c "
 import asyncio, sys
 sys.path.insert(0, '.')
 from database import init_db
@@ -23,8 +23,8 @@ cd ..
 # CV Engine backend
 echo "-> Setup cv-engine backend..."
 cd cv-engine
-python3 -m venv venv
-source venv/bin/activate
+python -m venv venv
+source venv/Scripts/activate 2>/dev/null || source venv/bin/activate
 pip install --quiet -r requirements.txt
 deactivate
 cd ..
@@ -37,6 +37,6 @@ cd ..
 
 echo ""
 echo "Setup selesai. Gunakan:"
-echo "  ./start-dashboard.sh   (monitoring saja, hemat daya)"
-echo "  ./start-cv.sh          (aktifkan analisis massa)"
-echo "  ./start-all.sh         (semua sekaligus)"
+echo "  bash start-dashboard.sh   (monitoring saja, hemat daya)"
+echo "  bash start-cv.sh          (aktifkan analisis massa)"
+echo "  bash start-all.sh         (semua sekaligus)"

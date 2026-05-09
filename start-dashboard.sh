@@ -9,8 +9,8 @@ cd "$(dirname "$0")"
 mkdir -p shared
 
 cd dashboard
-source venv/bin/activate
-python3 -m uvicorn main:app --host 0.0.0.0 --port 8000 > /tmp/semar-dashboard.log 2>&1 &
+source venv/Scripts/activate 2>/dev/null || source venv/bin/activate
+python -m uvicorn main:app --host 0.0.0.0 --port 8000 > /tmp/semar-dashboard.log 2>&1 &
 BACKEND_PID=$!
 deactivate
 cd ..
