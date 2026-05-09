@@ -36,7 +36,14 @@ Target hardware: Intel Core i3 Gen 7, 8GB RAM.
 
 ## Quick Start
 
-### 1. Setup (sekali saja)
+### 1. Clone Repository
+
+```bash
+git clone https://github.com/ajix21/moncen.git
+cd moncen
+```
+
+### 2. Setup (sekali saja)
 
 ```bash
 chmod +x setup.sh start-*.sh stop-*.sh
